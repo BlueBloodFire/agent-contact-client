@@ -1,5 +1,10 @@
 # change.md — 进度 & 修改记录（最新在上）
 
+## 2026-06-23 · 修复 dev 端口占用
+
+**变更内容**
+- `vite.config.ts`：`strictPort` 由 `true` 改为 `false`，5174 被占用时自动尝试下一端口（如 5175）
+
 ## 2026-06-22 · 全面重设计 — 对齐 CSM Intelligent Dashboard 视觉语言
 
 **变更内容**
