@@ -51,7 +51,7 @@ function App() {
 
   return (
     <div className="flex h-screen bg-[#f8f9fb] overflow-hidden">
-      <MainSidebar route={route} />
+      <MainSidebar current={route} />
       <main className="pl-64 flex-1 flex flex-col min-h-0 overflow-hidden">
         {renderView()}
       </main>
