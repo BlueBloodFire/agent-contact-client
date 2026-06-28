@@ -1,4 +1,4 @@
-import { LayoutDashboard, MessageSquare, Briefcase, Settings, User, HelpCircle, Plus, Sparkles } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Briefcase, Activity, User, LogOut } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { navigate } from '../router'
 import type { Route } from '../router'
@@ -8,78 +8,73 @@ interface Props {
 }
 
 export function MainSidebar({ current }: Props) {
-  const { username } = useAuthStore()
+  const { username, logout } = useAuthStore()
   const initials = username ? username.slice(0, 2).toUpperCase() : 'U'
 
   const navItems = [
-    { route: 'home' as Route, label: '工作台', icon: LayoutDashboard },
-    { route: 'chat' as Route, label: 'AI对话', icon: MessageSquare },
-    { route: 'business' as Route, label: '业务大厅', icon: Briefcase },
-    { route: 'admin' as Route, label: '管理后台', icon: Settings },
-    { route: 'profile' as Route, label: '个人中心', icon: User },
+    { route: 'home' as Route, label: '工作台', Icon: LayoutDashboard },
+    { route: 'chat' as Route, label: 'AI 对话', Icon: MessageSquare },
+    { route: 'business' as Route, label: '业务大厅', Icon: Briefcase },
+    { route: 'admin' as Route, label: '管理后台', Icon: Activity },
+    { route: 'profile' as Route, label: '个人中心', Icon: User },
   ]
 
   return (
-    <nav className="h-screen w-64 fixed left-0 top-0 bg-[#f3f4f6] border-r border-[#e5e7eb] flex flex-col p-4 z-40">
-      <div className="mb-6 px-2">
-        <h1 className="text-xl font-bold text-[#003d9b] tracking-tight">智能客服</h1>
-        <p className="text-xs text-gray-500 font-medium">AI服务工作台</p>
-      </div>
-
-      <div className="flex items-center gap-3 px-2 mb-6 bg-white/50 p-2.5 rounded-xl border border-[#e5e7eb]">
-        <div className="w-10 h-10 rounded-full bg-[#0052cc] flex items-center justify-center text-white text-sm font-bold shrink-0">
-          {initials}
+    <nav className="h-screen w-[220px] fixed left-0 top-0 bg-[#0f172a] flex flex-col py-5 px-3 z-40">
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 px-2 mb-6">
+        <div className="w-[30px] h-[30px] bg-[rgba(59,130,246,0.15)] border border-[rgba(59,130,246,0.3)] rounded-lg flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" className="w-3.5 h-3.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
         </div>
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-[#191c1e] truncate">{username}</p>
-          <p className="text-[11px] text-[#492f95] flex items-center gap-1 font-medium">
-            <Sparkles className="w-3 h-3 ai-spark shrink-0" />
-            AI助手在线
-          </p>
+        <div>
+          <p className="text-[14px] font-semibold text-[#f8fafc] leading-tight">智能客服</p>
+          <p className="text-[10px] text-[#475569]">工作台 v2.0</p>
         </div>
       </div>
 
-      <button
-        onClick={() => navigate('chat')}
-        className="w-full bg-[#0052cc] text-white font-semibold text-xs py-2.5 px-4 rounded-lg mb-6 hover:bg-[#003d9b] active:scale-[0.98] transition-all duration-150 shadow-sm flex justify-center items-center gap-2 cursor-pointer"
-      >
-        <Plus className="w-4 h-4" />
-        新建对话
-      </button>
+      {/* Nav label */}
+      <p className="text-[10px] font-medium text-[#334155] uppercase tracking-widest px-2 mb-1.5">导航</p>
 
-      <ul className="flex-1 flex flex-col gap-1.5 overflow-y-auto">
-        {navItems.map((item) => {
-          const IconComponent = item.icon
-          const isActive = current === item.route
+      {/* Nav items */}
+      <ul className="flex-1 flex flex-col gap-0.5 overflow-y-auto">
+        {navItems.map(({ route, label, Icon }) => {
+          const isActive = current === route
           return (
-            <li key={item.route}>
+            <li key={route}>
               <button
-                onClick={() => navigate(item.route)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer group ${
+                onClick={() => navigate(route)}
+                className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors cursor-pointer ${
                   isActive
-                    ? 'bg-[#0052cc]/10 text-[#0052cc]'
-                    : 'text-[#434654] hover:bg-gray-200'
+                    ? 'bg-[rgba(59,130,246,0.08)] text-[#3b82f6]'
+                    : 'text-[#64748b] hover:bg-white/5 hover:text-[#94a3b8]'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <IconComponent className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-105 duration-150 ${isActive ? 'text-[#0052cc]' : 'text-[#737685]'}`} />
-                  <span>{item.label}</span>
-                </div>
+                <Icon className="w-4 h-4 shrink-0" />
+                <span>{label}</span>
               </button>
             </li>
           )
         })}
       </ul>
 
-      <div className="mt-auto pt-4 border-t border-[#e5e7eb] flex flex-col gap-2.5">
-        <a
-          href="#help"
-          onClick={(e) => e.preventDefault()}
-          className="flex items-center gap-3 px-3.5 py-2 text-xs font-semibold text-[#434654] hover:bg-gray-200 rounded-lg transition-colors"
+      {/* User row at bottom */}
+      <div className="border-t border-[#1e293b] pt-3.5 flex items-center gap-2.5 px-2">
+        <div className="w-8 h-8 rounded-full bg-[#3b82f6] flex items-center justify-center text-white text-xs font-semibold shrink-0">
+          {initials}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-[#e2e8f0] truncate">{username}</p>
+          <p className="text-[10px] text-[#475569]">在线</p>
+        </div>
+        <button
+          onClick={logout}
+          title="退出"
+          className="p-1 text-[#475569] hover:text-[#94a3b8] transition-colors cursor-pointer shrink-0"
         >
-          <HelpCircle className="w-4 h-4 text-[#737685]" />
-          <span>帮助中心</span>
-        </a>
+          <LogOut className="w-3.5 h-3.5" />
+        </button>
       </div>
     </nav>
   )

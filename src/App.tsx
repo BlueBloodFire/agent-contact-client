@@ -12,7 +12,7 @@ import { ProfileView } from './views/ProfileView'
 import { MainSidebar } from './components/MainSidebar'
 
 function App() {
-  const { isLoggedIn } = useAuthStore()
+  const { isLoggedIn, checkExpiry } = useAuthStore()
   const { fetchAgents } = useContactStore()
   const [route, setRoute] = useState<Route>(getRoute())
 
@@ -34,6 +34,15 @@ function App() {
     }
   }, [isLoggedIn, fetchAgents])
 
+  // 定期检查token是否过期，每分钟一次
+  useEffect(() => {
+    if (!isLoggedIn) return
+    const timer = setInterval(() => {
+      checkExpiry()
+    }, 60 * 1000)
+    return () => clearInterval(timer)
+  }, [isLoggedIn, checkExpiry])
+
   if (!isLoggedIn) {
     return <LoginView />
   }
@@ -52,7 +61,7 @@ function App() {
   return (
     <div className="flex h-screen bg-[#f8f9fb] overflow-hidden">
       <MainSidebar current={route} />
-      <main className="pl-64 flex-1 flex flex-col min-h-0 overflow-hidden">
+      <main className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
         {renderView()}
       </main>
     </div>

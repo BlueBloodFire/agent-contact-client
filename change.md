@@ -1,5 +1,63 @@
 # change.md — 进度 & 修改记录（最新在上）
 
+## 2026-06-28 · 模型配置入口优化
+
+- `views/AdminView.tsx`：管理后台每个智能体卡片增加"模型配置"按钮，点击打开 ModelConfigDialog
+- `components/ChatSidebar.tsx`：齿轮图标加大（w-3.5）并加背景 hover 效果，更易发现
+
+---
+
+## 2026-06-28 · 认证强化 + 模型配置对话框 + RAG面板 + 样式优化
+
+**变更内容**
+
+认证：
+- `stores/authStore.ts`：login 改为真实调用 `/api/v1/login`，存储 token + expireAt；新增 checkExpiry（过期自动退出）
+- `api/request.ts`：所有请求自动带 `Authorization: Bearer {token}` header；收到 401 自动清除 token 并刷新页面
+- `views/LoginView.tsx`：handleLogin 改为 async，真实密码验证；底部提示改为"请联系管理员获取账号"
+- `App.tsx`：新增每分钟定期检查 token 是否过期的 effect
+
+模型配置：
+- `types/index.ts`：新增 `ModelConfig` 类型
+- `components/ModelConfigDialog.tsx`（新增）：模态对话框，支持配置 baseUrl/apiKey/model，调用 `/api/v1/update_model_config`
+- `components/ChatSidebar.tsx`：每个智能体旁新增齿轮按钮，点击打开 ModelConfigDialog
+
+RAG 知识库：
+- `api/agentApi.ts`：新增 `uploadRagDocument` / `listRagDocuments` API
+- `components/RagPanel.tsx`（新增）：折叠式知识库面板，展示文档列表，支持上传 pdf/txt/md/docx
+- `components/ChatSidebar.tsx`：底部集成 RagPanel
+
+样式优化（参考 Claude Desktop 风格）：
+- `components/MainSidebar.tsx`：侧边栏改为深色（`#1a1a1a`），白色文字，更清晰的导航项
+- `components/ChatWindow.tsx`：消息列表加 `max-w-3xl mx-auto` 居中，背景改为 `#fafafa`
+- `components/ChatMessage.tsx`：用户消息右对齐蓝色气泡 + AI 消息左对齐无背景，间距优化
+- `components/ChatInput.tsx`：输入框改为圆角大（rounded-2xl），发送按钮改为图标，底部居中对齐
+
+## 2026-06-24 · 多模态上传 + 联网搜索（Bing）
+
+**变更内容**
+
+前端：
+- `types/index.ts`：新增 `Attachment` 类型，`ChatMessage` 加 `attachments?` 字段
+- `api/request.ts`：新增 `streamMultipart`（FormData 流式请求）
+- `api/agentApi.ts`：新增 `chatStreamMultimodal`（multipart/form-data 发送文件+消息）
+- `stores/contactStore.ts`：新增 `pendingFiles / setPendingFiles`；`sendMessage` 自动路由到多模态或普通 stream
+- `components/ChatInput.tsx`：回形针按钮 + 文件选择（图片/PDF，最多5个）+ 预览 chip，可删除
+- `components/ChatMessage.tsx`：用户气泡渲染图片缩略图和文件名 chip
+
+后端：
+- 新增 `AiTool` 接口 + `BingSearchTool`（Bing Web Search API，env: `BING_SEARCH_API_KEY`）
+- `AiAgentConfigTableVO.Module.Agent` 加 `toolNameList` 字段
+- `AgentNode`：装配阶段按 `toolNameList` 从 Spring 容器查 `AiTool` bean，注入到 `LlmAgent`
+- `IChatService` / `ChatService`：新增 `handleMessageStream(ChatCommandEntity)` 流式多模态方法
+- `AgentServiceController`：新增 `POST /api/v1/chat_multimodal_stream`（multipart）
+- `contact-web-agent.yml` / `contact-app-agent.yml`：agent 注册 `bingSearchTool`，instruction 加联网搜索说明
+- `application-dev.yml`：新增 `bing.search.api-key: ${BING_SEARCH_API_KEY:}`
+
+**使用前提**
+- 设置环境变量 `BING_SEARCH_API_KEY=<你的 Bing Search v7 API Key>` 后启动后端，联网搜索功能生效
+- 不设置时搜索工具返回提示"未配置API Key"，其他功能正常
+
 ## 2026-06-23 · 修复 dev 端口占用
 
 **变更内容**

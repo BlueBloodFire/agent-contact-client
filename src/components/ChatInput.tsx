@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import { useContactStore } from '../stores/contactStore'
+import { Send, Paperclip, Square } from 'lucide-react'
+
+const ACCEPTED = 'image/jpeg,image/png,image/gif,image/webp,application/pdf'
 
 export function ChatInput() {
-  const { sendMessage, isLoading, currentAgentId, inputText, setInputText } = useContactStore()
+  const { sendMessage, stopStream, isLoading, currentAgentId, inputText, setInputText, pendingFiles, setPendingFiles } =
+    useContactStore()
   const [text, setText] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Pick up injected text from store (e.g. from BusinessView)
   useEffect(() => {
     if (inputText) {
       setText(inputText)
@@ -19,9 +23,7 @@ export function ChatInput() {
     const trimmed = text.trim()
     if (!trimmed || isLoading || !currentAgentId) return
     setText('')
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-    }
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
     await sendMessage(trimmed)
   }
 
@@ -36,33 +38,102 @@ export function ChatInput() {
     const el = textareaRef.current
     if (!el) return
     el.style.height = 'auto'
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const chosen = Array.from(e.target.files ?? [])
+    if (chosen.length === 0) return
+    setPendingFiles([...pendingFiles, ...chosen].slice(0, 5))
+    e.target.value = ''
+  }
+
+  const removeFile = (idx: number) => {
+    setPendingFiles(pendingFiles.filter((_, i) => i !== idx))
   }
 
   return (
-    <div className="shrink-0 border-t border-[#e5e7eb] bg-white p-3">
-      <div className="flex items-end gap-2 bg-[#f8f9fb] border border-[#e5e7eb] rounded-xl px-3 py-2">
-        <textarea
-          ref={textareaRef}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onInput={handleInput}
-          placeholder={currentAgentId ? '输入消息（Enter 发送，Shift+Enter 换行）' : '请先选择智能体'}
-          disabled={!currentAgentId || isLoading}
-          rows={1}
-          className="flex-1 bg-transparent resize-none outline-none text-sm text-[#191c1e] placeholder-gray-400 disabled:opacity-50"
-          style={{ maxHeight: '120px' }}
-        />
-        <button
-          onClick={handleSend}
-          disabled={!text.trim() || isLoading || !currentAgentId}
-          className="shrink-0 px-3 py-1.5 bg-[#0052cc] text-white text-xs font-semibold rounded-lg hover:bg-[#003d9b] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-        >
-          {isLoading ? '...' : '发送'}
-        </button>
+    <div className="shrink-0 bg-white border-t border-[#f1f5f9] px-6 py-3.5">
+      <div className="w-full max-w-4xl mx-auto">
+        {pendingFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {pendingFiles.map((f, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1.5 bg-white border border-[#d0dcff] rounded-lg px-2.5 py-1 text-xs text-[#3b82f6] max-w-[180px]"
+              >
+                {f.type.startsWith('image/') ? (
+                  <img
+                    src={URL.createObjectURL(f)}
+                    alt={f.name}
+                    className="w-5 h-5 object-cover rounded"
+                  />
+                ) : (
+                  <span className="text-[10px]">📄</span>
+                )}
+                <span className="truncate flex-1">{f.name}</span>
+                <button
+                  onClick={() => removeFile(i)}
+                  className="shrink-0 text-gray-400 hover:text-red-400 cursor-pointer leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-end gap-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-[14px] px-3.5 py-2.5 focus-within:border-[#3b82f6] transition-all">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!currentAgentId || isLoading}
+            title="上传图片或文件（最多5个）"
+            className="shrink-0 text-gray-400 hover:text-[#3b82f6] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer pb-0.5"
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED}
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+          />
+
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onInput={handleInput}
+            placeholder={currentAgentId ? '输入消息…（Enter 发送，Shift+Enter 换行）' : '请先选择智能体'}
+            disabled={!currentAgentId || isLoading}
+            rows={1}
+            className="flex-1 bg-transparent resize-none outline-none text-sm text-[#191c1e] placeholder-gray-400 disabled:opacity-50 leading-relaxed"
+            style={{ maxHeight: '160px' }}
+          />
+
+          {isLoading ? (
+            <button
+              onClick={stopStream}
+              title="停止响应"
+              className="shrink-0 w-8 h-8 flex items-center justify-center bg-[#dc2626] text-white rounded-xl hover:bg-[#b91c1c] transition-all cursor-pointer"
+            >
+              <Square className="w-3 h-3 fill-white" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              disabled={!text.trim() || !currentAgentId}
+              className="shrink-0 w-8 h-8 flex items-center justify-center bg-[#3b82f6] text-white rounded-[9px] hover:bg-[#2563eb] disabled:bg-[#cbd5e1] disabled:cursor-default transition-all cursor-pointer"
+            >
+              <Send className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+        <p className="text-[10px] text-gray-400 mt-1.5 text-center font-medium">AI 生成内容仅供参考，如有疑问请联系人工客服</p>
       </div>
-      <p className="text-[10px] text-gray-400 mt-1 text-center font-medium">AI 生成内容仅供参考，如有疑问请联系人工客服</p>
     </div>
   )
 }

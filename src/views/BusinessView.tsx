@@ -11,11 +11,11 @@ interface Service {
 }
 
 const SERVICES: Service[] = [
-  { icon: <Receipt className="w-5 h-5" />, title: '账单查询', desc: '查看账单详情与历史记录', prompt: '我想查询我的账单信息', color: 'text-[#0052cc]', bg: 'bg-[#0052cc]/10' },
+  { icon: <Receipt className="w-5 h-5" />, title: '账单查询', desc: '查看账单详情与历史记录', prompt: '我想查询我的账单信息', color: 'text-[#3b82f6]', bg: 'bg-[#3b82f6]/10' },
   { icon: <Package className="w-5 h-5" />, title: '订单查询', desc: '查询订单状态与物流信息', prompt: '我想查询我的订单状态', color: 'text-[#36b37e]', bg: 'bg-[#36b37e]/10' },
   { icon: <Edit3 className="w-5 h-5" />, title: '信息修改', desc: '修改个人信息与账户设置', prompt: '我想修改我的个人信息', color: 'text-[#4c3398]', bg: 'bg-[#4c3398]/10' },
   { icon: <FileText className="w-5 h-5" />, title: '业务申请', desc: '申请新业务或开通服务', prompt: '我想申请一项新业务', color: 'text-[#ffab00]', bg: 'bg-[#ffab00]/10' },
-  { icon: <FileCheck className="w-5 h-5" />, title: '凭证开具', desc: '申请开具发票或证明文件', prompt: '我需要开具发票或证明文件', color: 'text-[#0052cc]', bg: 'bg-[#0052cc]/10' },
+  { icon: <FileCheck className="w-5 h-5" />, title: '凭证开具', desc: '申请开具发票或证明文件', prompt: '我需要开具发票或证明文件', color: 'text-[#3b82f6]', bg: 'bg-[#3b82f6]/10' },
   { icon: <CalendarCheck className="w-5 h-5" />, title: '预约办理', desc: '预约线下窗口办理业务', prompt: '我想预约线下窗口办理业务', color: 'text-[#36b37e]', bg: 'bg-[#36b37e]/10' },
   { icon: <MessageCircle className="w-5 h-5" />, title: '投诉建议', desc: '提交投诉或意见建议', prompt: '我有一个投诉要提交', color: 'text-[#de350b]', bg: 'bg-[#de350b]/10' },
   { icon: <Search className="w-5 h-5" />, title: '工单查询', desc: '查询已提交工单处理进度', prompt: '我想查询我的工单处理进度', color: 'text-[#4c3398]', bg: 'bg-[#4c3398]/10' },
