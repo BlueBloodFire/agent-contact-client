@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ChatSidebar } from '../components/ChatSidebar'
 import { ChatWindow } from '../components/ChatWindow'
 import { ChatInput } from '../components/ChatInput'
-import { ModelConfigDialog } from '../components/ModelConfigDialog'
+import { ModelConfigDialog, getActiveConfig } from '../components/ModelConfigDialog'
 import { useContactStore } from '../stores/contactStore'
 
 export function ChatView() {
@@ -27,12 +27,15 @@ export function ChatView() {
     setTimeout(ensureAgentAndSend, 100)
   }, [])
 
+  // 切换智能体时主动探测模型配置
   useEffect(() => {
-    if (showModelConfigPrompt && currentAgentId) {
-      const agent = agents.find((a) => a.agentId === currentAgentId)
-      setConfigAgentName(agent?.agentName ?? '智能体')
+    if (!currentAgentId) return
+    const agent = agents.find((a) => a.agentId === currentAgentId)
+    setConfigAgentName(agent?.agentName ?? '智能体')
+    if (!getActiveConfig(currentAgentId)) {
+      setShowModelConfigPrompt(true)
     }
-  }, [showModelConfigPrompt, currentAgentId, agents])
+  }, [currentAgentId, agents])
 
   return (
     <div className="flex flex-1 min-h-0">

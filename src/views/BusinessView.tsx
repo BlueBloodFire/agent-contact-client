@@ -1,5 +1,9 @@
 import { navigate } from '../router'
+import { useContactStore } from '../stores/contactStore'
+import { getActiveConfig } from '../components/ModelConfigDialog'
 import { Receipt, Package, Edit3, FileText, CalendarCheck, MessageCircle, Search, FileCheck, ArrowRight } from 'lucide-react'
+
+const WORK_ORDER_AGENT_ID = '300004'
 
 interface Service {
   icon: React.ReactNode
@@ -22,7 +26,19 @@ const SERVICES: Service[] = [
 ]
 
 export function BusinessView() {
+  const { setCurrentAgentId, setShowModelConfigPrompt } = useContactStore()
+
   const handleServiceClick = (prompt: string) => {
+    // 检查工单助手是否已配置模型
+    const cfg = getActiveConfig(WORK_ORDER_AGENT_ID)
+    if (!cfg) {
+      setCurrentAgentId(WORK_ORDER_AGENT_ID)
+      setShowModelConfigPrompt(true)
+      navigate('chat')
+      return
+    }
+    // 切换到工单智能助手并传递预设消息
+    setCurrentAgentId(WORK_ORDER_AGENT_ID)
     localStorage.setItem('contact_pending_message', prompt)
     navigate('chat')
   }
@@ -31,7 +47,7 @@ export function BusinessView() {
     <div className="flex-1 overflow-y-auto p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#191c1e] tracking-tight">业务办理大厅</h1>
-        <p className="text-xs text-gray-500 font-medium mt-1">选择服务类型，由 AI 助手协助您快速办理</p>
+        <p className="text-xs text-gray-500 font-medium mt-1">选择服务类型，由工单智能助手协助您快速办理</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
