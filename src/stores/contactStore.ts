@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { AgentConfig, Attachment, ChatMessage, ChatSession } from '../types'
 import * as agentApi from '../api/agentApi'
 import { useAuthStore } from './authStore'
+import { getActiveConfig } from '../components/ModelConfigDialog'
 
 interface ContactStore {
   agents: AgentConfig[]
@@ -9,10 +10,18 @@ interface ContactStore {
   fetchAgents: () => Promise<void>
   setCurrentAgentId: (id: string) => void
 
+  webSearchEnabled: boolean
+  setWebSearchEnabled: (v: boolean) => void
+
+  showModelConfigPrompt: boolean
+  setShowModelConfigPrompt: (v: boolean) => void
+
   sessions: Map<string, ChatSession>
   currentSessionId: string | null
   createSession: (agentId: string) => Promise<string>
   setCurrentSession: (id: string | null) => void
+  fetchSessions: (agentId: string) => Promise<void>
+  restoreSession: (sessionId: string) => Promise<void>
 
   isLoading: boolean
   setLoading: (v: boolean) => void
@@ -35,10 +44,13 @@ export const useContactStore = create<ContactStore>((set, get) => ({
   agents: [],
   currentAgentId: null,
   _abortFn: null,
+  webSearchEnabled: false,
+  setWebSearchEnabled: (v) => set({ webSearchEnabled: v }),
+  showModelConfigPrompt: false,
+  setShowModelConfigPrompt: (v) => set({ showModelConfigPrompt: v }),
   stopStream: () => {
     const { _abortFn, currentSessionId } = get()
     if (_abortFn) { _abortFn(); set({ _abortFn: null }) }
-    // 找到正在流式的消息，标记为已完成
     if (currentSessionId) {
       set((s) => {
         const sessions = new Map(s.sessions)
@@ -66,6 +78,58 @@ export const useContactStore = create<ContactStore>((set, get) => ({
 
   sessions: new Map(),
   currentSessionId: null,
+
+  fetchSessions: async (agentId) => {
+    const userId = useAuthStore.getState().userId
+    try {
+      const records = await agentApi.getSessions(userId, agentId)
+      set((s) => {
+        const sessions = new Map(s.sessions)
+        for (const r of records) {
+          if (!sessions.has(r.sessionId)) {
+            sessions.set(r.sessionId, {
+              id: r.sessionId,
+              agentId: r.agentId,
+              name: r.title || `对话 ${sessions.size + 1}`,
+              messages: [],
+              createdAt: new Date(r.createdAt).getTime(),
+            })
+          }
+        }
+        return { sessions }
+      })
+    } catch {
+      // ignore
+    }
+  },
+
+  restoreSession: async (sessionId) => {
+    const { sessions } = get()
+    const session = sessions.get(sessionId)
+    if (!session || session.messages.length > 0) {
+      set({ currentSessionId: sessionId })
+      return
+    }
+    try {
+      const records = await agentApi.getSessionMessages(sessionId)
+      set((s) => {
+        const updated = new Map(s.sessions)
+        const existing = updated.get(sessionId)
+        if (existing) {
+          const messages: ChatMessage[] = records.map((r, i) => ({
+            id: `${sessionId}_${i}`,
+            role: r.role as 'user' | 'assistant',
+            content: r.content,
+            timestamp: new Date(r.createdAt).getTime(),
+          }))
+          updated.set(sessionId, { ...existing, messages })
+        }
+        return { sessions: updated, currentSessionId: sessionId }
+      })
+    } catch {
+      set({ currentSessionId: sessionId })
+    }
+  },
 
   createSession: async (agentId) => {
     const userId = useAuthStore.getState().userId
@@ -119,9 +183,16 @@ export const useContactStore = create<ContactStore>((set, get) => ({
     }),
 
   sendMessage: async (text) => {
-    const { currentAgentId, currentSessionId, isLoading, pendingFiles } = get()
+    const { currentAgentId, currentSessionId, isLoading, pendingFiles, webSearchEnabled } = get()
     const userId = useAuthStore.getState().userId
     if (!currentAgentId || isLoading || !text.trim()) return
+
+    // 检查是否已配置模型
+    const activeCfg = getActiveConfig(currentAgentId)
+    if (!activeCfg) {
+      set({ showModelConfigPrompt: true })
+      return
+    }
 
     const files = [...pendingFiles]
     set({ pendingFiles: [] })
@@ -165,6 +236,17 @@ export const useContactStore = create<ContactStore>((set, get) => ({
     const onDone = () => {
       get().updateMessage(sessionId!, aiMsgId, accumulated, false)
       set({ isLoading: false })
+      // update session name from first message if still default
+      const sess = get().sessions.get(sessionId!)
+      if (sess && sess.name.startsWith('对话 ')) {
+        const title = text.length > 20 ? text.substring(0, 20) + '…' : text
+        set((s) => {
+          const sessions = new Map(s.sessions)
+          const existing = sessions.get(sessionId!)
+          if (existing) sessions.set(sessionId!, { ...existing, name: title })
+          return { sessions }
+        })
+      }
     }
     const onError = (_err: string) => {
       get().updateMessage(sessionId!, aiMsgId, accumulated || '响应失败，请重试', false)
@@ -175,7 +257,7 @@ export const useContactStore = create<ContactStore>((set, get) => ({
     if (files.length > 0) {
       abortFn = agentApi.chatStreamMultimodal(currentAgentId, userId, sessionId, text, files, onChunk, onDone, onError)
     } else {
-      abortFn = agentApi.chatStream(currentAgentId, userId, sessionId, text, onChunk, onDone, onError)
+      abortFn = agentApi.chatStream(currentAgentId, userId, sessionId, text, onChunk, onDone, onError, webSearchEnabled)
     }
     set({ _abortFn: abortFn })
   },

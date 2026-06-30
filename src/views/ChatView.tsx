@@ -1,32 +1,38 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ChatSidebar } from '../components/ChatSidebar'
 import { ChatWindow } from '../components/ChatWindow'
 import { ChatInput } from '../components/ChatInput'
+import { ModelConfigDialog } from '../components/ModelConfigDialog'
 import { useContactStore } from '../stores/contactStore'
 
 export function ChatView() {
+  const { showModelConfigPrompt, setShowModelConfigPrompt, currentAgentId, agents } = useContactStore()
+  const [configAgentName, setConfigAgentName] = useState('')
+
   useEffect(() => {
     const pending = localStorage.getItem('contact_pending_message')
     if (!pending) return
     localStorage.removeItem('contact_pending_message')
 
     const store = useContactStore.getState()
-    // 确保有选中的智能体，没有则自动选第一个
     const ensureAgentAndSend = async () => {
       let agentId = store.currentAgentId
       if (!agentId && store.agents.length > 0) {
         agentId = store.agents[0].agentId
         store.setCurrentAgentId(agentId)
-        // 等待状态更新
         await new Promise((r) => setTimeout(r, 50))
       }
-      if (agentId) {
-        await useContactStore.getState().sendMessage(pending)
-      }
+      if (agentId) await useContactStore.getState().sendMessage(pending)
     }
-
     setTimeout(ensureAgentAndSend, 100)
   }, [])
+
+  useEffect(() => {
+    if (showModelConfigPrompt && currentAgentId) {
+      const agent = agents.find((a) => a.agentId === currentAgentId)
+      setConfigAgentName(agent?.agentName ?? '智能体')
+    }
+  }, [showModelConfigPrompt, currentAgentId, agents])
 
   return (
     <div className="flex flex-1 min-h-0">
@@ -35,6 +41,15 @@ export function ChatView() {
         <ChatWindow />
         <ChatInput />
       </div>
+
+      {showModelConfigPrompt && currentAgentId && (
+        <ModelConfigDialog
+          agentId={currentAgentId}
+          agentName={configAgentName}
+          onClose={() => setShowModelConfigPrompt(false)}
+          onSaved={() => setShowModelConfigPrompt(false)}
+        />
+      )}
     </div>
   )
 }

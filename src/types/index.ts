@@ -33,3 +33,11 @@ export interface ModelConfig {
   apiKey: string
   model: string
 }
+
+export interface ModelConfigEntry {
+  id: string
+  name: string
+  baseUrl: string
+  apiKey: string
+  model: string
+}

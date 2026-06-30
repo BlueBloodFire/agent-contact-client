@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useContactStore } from '../stores/contactStore'
 import { MessageSquare, Settings, User, Briefcase } from 'lucide-react'
 import { ModelConfigDialog } from './ModelConfigDialog'
@@ -12,13 +12,20 @@ const AGENT_STYLES = [
 export function ChatSidebar() {
   const {
     agents, currentAgentId, setCurrentAgentId,
-    sessions, currentSessionId, setCurrentSession, createSession,
+    sessions, currentSessionId, createSession,
+    fetchSessions, restoreSession,
   } = useContactStore()
 
   const [configAgent, setConfigAgent] = useState<{ agentId: string; agentName: string } | null>(null)
 
+  useEffect(() => {
+    if (currentAgentId) fetchSessions(currentAgentId)
+  }, [currentAgentId])
+
   const agentSessions = currentAgentId
-    ? [...sessions.values()].filter((s) => s.agentId === currentAgentId)
+    ? [...sessions.values()]
+        .filter((s) => s.agentId === currentAgentId)
+        .sort((a, b) => b.createdAt - a.createdAt)
     : []
 
   return (
@@ -79,7 +86,7 @@ export function ChatSidebar() {
         {agentSessions.map((session) => (
           <button
             key={session.id}
-            onClick={() => setCurrentSession(session.id)}
+            onClick={() => restoreSession(session.id)}
             className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs mb-0.5 transition-colors flex items-center gap-2 cursor-pointer ${
               currentSessionId === session.id
                 ? 'bg-[#eff6ff] text-[#3b82f6] font-medium'
