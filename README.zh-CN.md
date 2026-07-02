@@ -143,3 +143,7 @@ npm run build
 
 - [`ai-agent-contact`](https://github.com/BlueBloodFire/agent-contact-server)
 - [`ai-agent-contact-app`](https://github.com/BlueBloodFire/agent-contact-app)
+
+## License
+
+本项目使用 Apache License 2.0 授权，请查看 [LICENSE](./LICENSE) 文件。

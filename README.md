@@ -143,3 +143,7 @@ Use this repository together with:
 
 - [`ai-agent-contact`](https://github.com/BlueBloodFire/agent-contact-server)
 - [`ai-agent-contact-app`](https://github.com/BlueBloodFire/agent-contact-app)
+
+## License
+
+Licensed under the Apache License 2.0. See the [LICENSE](./LICENSE) file for details.
