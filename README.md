@@ -1,110 +1,99 @@
 # AI Agent Contact Client
 
-`ai-agent-contact-client` 是 AI 客服平台的 Web 工作台前端，面向桌面浏览器和后台使用场景。
+[中文文档](./README.zh-CN.md)
 
-它通过对接 `ai-agent-contact` 后端服务，提供登录、智能体切换、多会话聊天、模型配置、知识库管理、个人中心和管理视图等能力。
+`ai-agent-contact-client` is the desktop-style web workspace of the AI Agent Contact product.
 
-## 产品定位
+It connects to the `ai-agent-contact` backend and provides login, agent switching, multi-session chat, model settings, knowledge base management, and operational views for internal teams.
 
-这个项目是 AI 客服产品的 **Web 管理工作台 / 桌面化前端**。
+## What It Is
 
-相比偏 App 风格的 `ai-agent-contact-app`，它更强调：
+This repository is the **web workbench frontend** of the product.
 
-- 工作台式布局
-- 多模块导航
-- 模型与知识库管理
-- 更适合运营、客服、管理员或内部团队使用的桌面端体验
+Compared with the app-style frontend, it puts more emphasis on:
 
-## 核心功能
+- desktop workspace layout
+- multi-module navigation
+- model and knowledge management
+- internal operations and management workflows
 
-### 1. 登录与认证
+## Core Experience
 
-- 登录页
-- Token 持久化
-- 自动携带鉴权请求头
-- 登录过期自动退出
+### Login and Authentication
 
-### 2. 智能体与会话管理
+- Login page
+- Token persistence
+- Authenticated request handling
+- Auto logout on expired auth state
 
-- 获取智能体列表
-- 选择当前智能体
-- 创建新会话
-- 恢复历史会话
-- 维护多会话聊天记录
+### Agent and Session Management
 
-### 3. AI 对话工作台
+- Fetch available agents
+- Switch the current agent
+- Create new sessions
+- Restore historical sessions
+- Maintain multiple chat sessions
 
-- 流式对话输出
-- Markdown 回复渲染
-- 多轮上下文问答
-- 用户消息 / AI 回复完整展示
-- 支持文件附件输入
+### AI Conversation Workspace
 
-### 4. 模型配置
+- Streaming response rendering
+- Markdown reply rendering
+- Multi-turn contextual conversation
+- Full user / assistant message display
+- File attachment input support
 
-- 针对不同智能体配置不同模型
-- 支持保存多个模型配置项
-- 可设置当前激活模型
-- 适用于多模型试验和不同供应商切换
+### Model Configuration
 
-### 5. 知识库 / RAG 面板
+- Configure different models for different agents
+- Save multiple model configurations
+- Switch active model settings
 
-- 按智能体展示知识库文档
-- 上传知识库文档
-- 查看知识库状态
-- 为客服 Agent 增加资料问答能力
+### Knowledge Base / RAG Panel
 
-### 6. 工作台页面能力
+- Show knowledge documents by agent
+- Upload knowledge files
+- Inspect knowledge status
+- Extend agent answers with reference material
 
-- 首页总览
-- AI 对话页
-- 业务页
-- 管理页
-- 个人中心
+## Typical Use Cases
 
-它已经不只是一个聊天页，而是一个完整的客服平台前端雏形。
+- Build an internal AI customer service workspace
+- Let operations, support, product, and admin roles use one web platform
+- Switch among multiple customer service agents in one interface
+- Configure different models and knowledge sources per agent
+- Demonstrate the desktop-side product form of an AI customer service platform
 
-## 典型使用场景
+## Who It Is For
 
-- 做企业 AI 客服后台工作台
-- 让运营、客服、产品、管理员统一使用一个 Web 平台
-- 在同一个界面中切换不同客服智能体
-- 对不同智能体配置不同模型和知识库
-- 演示 AI 客服平台的后台产品形态
+- Operations staff managing customer service entry flows and conversations
+- Support leads evaluating agent, model, and knowledge-base quality
+- Administrators maintaining platform configuration and usage workflow
+- Product managers validating product structure and interaction design from a platform view
+- Internal teams that need a desktop-style web workspace for pilots or demos
 
-## 适合谁使用
+## Why It Is Better Than a Simple Chat Demo
 
-- 运营人员：在后台工作台中管理客服入口、查看对话、切换智能体
-- 客服主管：评估不同智能体、不同模型和知识库的答复效果
-- 管理员：维护平台配置、会话入口和后台使用流程
-- 产品经理：从平台视角验证 AI 客服产品的信息架构和交互链路
-- 企业内部团队：需要一个桌面化 Web 工作台来承载 AI 客服产品演示或试运行
+Traditional chat demos usually expose only an input box and a response area. This project is closer to a real operational platform:
 
-## 相比传统聊天页面的优势
+- Multiple agents instead of a single bot
+- Session management instead of one-off prompts
+- Configurable models instead of hard-coded settings
+- Knowledge base workflows instead of model-only replies
+- Workspace-style product structure instead of a single chat page
 
-传统聊天 Demo 往往只提供一个输入框和输出窗口，而本项目已经具备平台化雏形：
+## Main Modules
 
-- 支持多个智能体，而不是单一 Bot
-- 支持会话管理，而不是一次性问答
-- 支持模型配置，而不是固定调用一个模型
-- 支持知识库管理，而不是纯裸模型回答
-- 支持后台页面结构，而不是只有聊天页
+- `HomeView`
+- `ChatView`
+- `BusinessView`
+- `AdminView`
+- `ProfileView`
+- `MainSidebar`
+- `ChatSidebar`
+- `ModelConfigDialog`
+- `RagPanel`
 
-## 页面与模块
-
-主要包含：
-
-- `HomeView`：首页总览
-- `ChatView`：AI 对话页
-- `BusinessView`：业务页
-- `AdminView`：管理页
-- `ProfileView`：个人中心
-- `MainSidebar`：主导航
-- `ChatSidebar`：智能体与会话侧栏
-- `ModelConfigDialog`：模型配置弹窗
-- `RagPanel`：知识库面板
-
-## 技术栈
+## Tech Stack
 
 - React 19
 - TypeScript
@@ -114,40 +103,43 @@
 - react-markdown
 - recharts
 
-## 快速启动
+## Quick Start
 
-### 安装依赖
+### Requirements
+
+- Node.js
+- npm
+- a running `ai-agent-contact` backend
+
+### Install
 
 ```bash
 npm install
 ```
 
-### 开发模式
+### Development
 
 ```bash
 npm run dev
 ```
 
-### 构建
+### Production Build
 
 ```bash
 npm run build
 ```
 
-## 后端依赖
+## Backend Dependency
 
-本项目依赖：
+This frontend depends on:
 
 - `ai-agent-contact`
 
-默认通过前端代理把 `/api` 请求转发到后端服务，因此需要先启动后端。
+By default, `/api` requests are proxied to the backend service in development.
 
-## 与其他仓库的关系
+## Recommended Pairing
 
-- `ai-agent-contact`：后端服务，负责智能体运行、会话编排、模型配置、知识库和流式接口
-- `ai-agent-contact-app`：App 风格前端，面向移动端和轻量体验
-- `ai-agent-contact-client`：Web 工作台前端，面向桌面浏览器和后台使用场景
+Use this repository together with:
 
-## 适合访客快速理解的一句话
-
-这是 AI 客服产品的 Web 工作台前端，用来承载“智能体选择 + 多会话对话 + 模型配置 + 知识库管理”的桌面化平台体验。
+- [`ai-agent-contact`](https://github.com/BlueBloodFire/agent-contact-server)
+- [`ai-agent-contact-app`](https://github.com/BlueBloodFire/agent-contact-app)
